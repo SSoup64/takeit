@@ -6,7 +6,47 @@ use std::fmt::{ Debug, Formatter, Result as FmtResult };
 /// The `HandOff` is initialized with a value on creation. The handoff can then
 /// be cloned and sent between threads.
 /// The first thread to take the value, receives it and takes ownership over the
-/// value. Taking after the value was first taken is no allowed.
+/// value. After the value was taken once, trying to take it again is not allowed.
+///
+/// # Example
+/// ```
+/// use takeit::HandOff;
+///
+/// #[derive(Debug)]
+/// struct Foo {
+///     bar: i32,
+///     buzz: f32,
+/// }
+///
+/// fn sleep_rand_time() {
+///     // --snip--
+/// }
+///
+/// fn main() {
+///     let handoff = HandOff::new(Foo { bar: 10, buzz: 29.0 });
+///     let handoff_clone1 = handoff.clone();
+///     let handoff_clone2 = handoff.clone();
+///
+///     let thread1 = std::thread::spawn(move || {
+///         sleep_rand_time();
+///         match handoff_clone1.take() {
+///             Some(val) => println!("Got {val:?} in thread 1!"),
+///             None => {}
+///         }
+///     });
+///
+///     let thread2 = std::thread::spawn(move || {
+///         sleep_rand_time();
+///         match handoff_clone2.take() {
+///             Some(val) => println!("Got {val:?} in thread 2!"),
+///             None => {}
+///         }
+///     });
+///
+///     thread1.join().unwrap();
+///     thread2.join().unwrap();
+/// }
+/// ```
 pub struct HandOff<T>(Arc<Mutex<Option<T>>>);
 
 impl<T> HandOff<T> {
