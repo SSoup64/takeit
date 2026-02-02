@@ -1,4 +1,5 @@
 use std::sync::{ Arc, Mutex };
+use std::fmt::{ Debug, Formatter, Result as FmtResult };
 
 /// A syncing type for sending a single object.
 /// 
@@ -49,6 +50,24 @@ impl<T> HandOff<T> {
 impl<T> Clone for HandOff<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
+    }
+}
+
+impl<T: Debug> Debug for HandOff<T> {
+    fn fmt(&self, fmt: &mut Formatter) -> FmtResult {
+        let mut builder = fmt.debug_struct("HandOff");
+
+        let locked_value = self.0.lock();
+        match locked_value {
+            Ok(val) => {
+                builder.field("value", &val);
+            },
+            _ => {
+                builder.field("value", &None::<T>);
+            }
+        }
+
+        builder.finish()
     }
 }
 
