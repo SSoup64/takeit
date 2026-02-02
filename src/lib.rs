@@ -55,7 +55,8 @@ impl<T> Clone for HandOff<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    
+    #[derive(PartialEq, Debug)]
     struct Foo {
         val: i32,
     }
@@ -73,5 +74,16 @@ mod tests {
     fn test_non_clonable() {
         let handoff = HandOff::new(Foo { val: 10 });
         let handoff_clone = handoff.clone();
+
+        assert_eq!(handoff.take(), Some(Foo { val: 10 }))
+    }
+    
+    #[test]
+    fn test_threads() {
+        let handoff = HandOff::new(Foo { val: 42 });
+
+        let my_thread = std::thread::spawn(move || {
+            assert_eq!(handoff.clone().take(), Some(Foo { val: 42 }))
+        });
     }
 }
