@@ -6,7 +6,6 @@ use std::sync::{ Arc, Mutex };
 /// be cloned and sent between threads.
 /// The first thread to take the value, receives it and takes ownership over the
 /// value. Taking after the value was first taken is no allowed.
-#[derive(Debug, Clone)]
 pub struct HandOff<T>(Arc<Mutex<Option<T>>>);
 
 impl<T> HandOff<T> {
@@ -20,7 +19,7 @@ impl<T> HandOff<T> {
     /// let handoff2 = HandOff::new(String::from("Hello, World!"));
     /// ```
     pub fn new(val: T) -> Self {
-        HandOff(Arc::new(Mutex::new(Some(val))))
+        Self(Arc::new(Mutex::new(Some(val))))
     }
     
     /// Returns the value of the `HandOff` by moving it.
@@ -47,9 +46,19 @@ impl<T> HandOff<T> {
     }
 }
 
+impl<T> Clone for HandOff<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct Foo {
+        val: i32,
+    }
 
     #[test]
     fn test_single_thread() {
@@ -58,5 +67,11 @@ mod tests {
         
         assert_eq!(handoff.take(), Some(19));
         assert_eq!(handoff_clone.take(), None);
+    }
+    
+    #[test]
+    fn test_non_clonable() {
+        let handoff = HandOff::new(Foo { val: 10 });
+        let handoff_clone = handoff.clone();
     }
 }
