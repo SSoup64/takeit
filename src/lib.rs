@@ -1,5 +1,11 @@
 use std::sync::{ Arc, Mutex };
 
+/// A syncing type for sending a single object.
+/// 
+/// The `HandOff` is initialized with a value on creation. The handoff can then
+/// be cloned and sent between threads.
+/// The first thread to take the value, receives it and takes ownership over the
+/// value. Taking after the value was first taken is no allowed.
 #[derive(Debug, Clone)]
 pub struct HandOff<T>(Arc<Mutex<Option<T>>>);
 
@@ -17,7 +23,7 @@ impl<T> HandOff<T> {
         HandOff(Arc::new(Mutex::new(Some(val))))
     }
     
-    /// Returns the value of the HandOff by moving.
+    /// Returns the value of the `HandOff` by moving it.
     ///
     /// # Errors
     /// If the value was already "taken" earlier, it returns `None`.
