@@ -4,11 +4,35 @@ use std::sync::{ Arc, Mutex };
 pub struct HandOff<T>(Arc<Mutex<Option<T>>>);
 
 impl<T> HandOff<T> {
-    fn new(val: T) -> Self {
+    /// Creates a new HandOff object initialized with a value of type `T`
+    ///
+    /// # Example
+    /// ```
+    /// use takeit::HandOff;
+    ///
+    /// let handoff1 = HandOff::new(10);
+    /// let handoff2 = HandOff::new(String::from("Hello, World!"));
+    /// ```
+    pub fn new(val: T) -> Self {
         HandOff(Arc::new(Mutex::new(Some(val))))
     }
-
-    fn take(self) -> Option<T> {
+    
+    /// Returns the value of the HandOff by moving.
+    ///
+    /// # Errors
+    /// If the value was already "taken" earlier, it returns `None`.
+    ///
+    /// # Example
+    /// ```
+    /// use takeit::HandOff;
+    ///
+    /// let handoff = HandOff::new(1337);
+    /// let handoff_clone = handoff.clone();
+    ///
+    /// assert_eq!(handoff.take(), Some(1337));
+    /// assert_eq!(handoff_clone.take(), None);
+    /// ```
+    pub fn take(self) -> Option<T> {
         if let Ok(mut locked_value) = self.0.lock() {
             locked_value.take()
         } else {
