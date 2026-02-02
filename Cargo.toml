@@ -2,5 +2,10 @@
 name = "takeit"
 version = "1.0.0"
 edition = "2024"
+license = "MIT"
+description = "Wrapper smart pointer syncing type for oneshot sending"
+repository = "https://github.com/SSoup64/takeit"
+readme = "README.md"
+keywords = ["sync", "thread", "primitive", "ownership", "clonanle"]
 
 [dependencies]
